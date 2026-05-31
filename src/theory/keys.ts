@@ -1,0 +1,95 @@
+import type { KeyDataMap } from '@/types/music'
+
+export const KEY_DATA: KeyDataMap = {
+  C: {
+    label: 'C majeur',
+    scale: ['C', 'D', 'E', 'F', 'G', 'A', 'B'],
+    chords: [
+      { roman: 'I',    name: 'C majeur',       type: 'maj', notes: ['C', 'E', 'G'],    mood: 'Vrolijk, stabiel',     role: 'Thuisgevoel — hier begint en eindigt alles' },
+      { roman: 'ii',   name: 'D mineur',        type: 'min', notes: ['D', 'F', 'A'],    mood: 'Zacht, licht droevig', role: 'Beweegt graag naar G of C' },
+      { roman: 'iii',  name: 'E mineur',        type: 'min', notes: ['E', 'G', 'B'],    mood: 'Intiem, ingetogen',    role: 'Geeft kleur, minder gebruikelijk' },
+      { roman: 'IV',   name: 'F majeur',        type: 'maj', notes: ['F', 'A', 'C'],    mood: 'Warm, open',           role: 'Veel gebruikt vóór C of G' },
+      { roman: 'V',    name: 'G majeur',        type: 'maj', notes: ['G', 'B', 'D'],    mood: 'Spanning, beweging',   role: 'Vraagt om oplossing naar C' },
+      { roman: 'vi',   name: 'A mineur',        type: 'min', notes: ['A', 'C', 'E'],    mood: 'Melancolisch, warm',   role: 'Verwant aan C, geeft diepte' },
+      { roman: 'vii°', name: 'B verminderd',    type: 'dim', notes: ['B', 'D', 'F'],    mood: 'Onrustig, dissonant',  role: 'Zeldzaam — spanningsnoot' },
+    ],
+  },
+  G: {
+    label: 'G majeur',
+    scale: ['G', 'A', 'B', 'C', 'D', 'E', 'F#'],
+    chords: [
+      { roman: 'I',    name: 'G majeur',        type: 'maj', notes: ['G', 'B', 'D'],    mood: 'Helder, opgewekt',     role: 'Thuistoonsoort' },
+      { roman: 'ii',   name: 'A mineur',        type: 'min', notes: ['A', 'C', 'E'],    mood: 'Zacht, droevig',       role: 'Beweegt naar D of G' },
+      { roman: 'iii',  name: 'B mineur',        type: 'min', notes: ['B', 'D', 'F#'],   mood: 'Serieus, ingetogen',   role: 'Geeft kleur' },
+      { roman: 'IV',   name: 'C majeur',        type: 'maj', notes: ['C', 'E', 'G'],    mood: 'Warm, vertrouwd',      role: 'Veel gebruikt vóór G' },
+      { roman: 'V',    name: 'D majeur',        type: 'maj', notes: ['D', 'F#', 'A'],   mood: 'Spanning, verwachting',role: 'Vraagt om G' },
+      { roman: 'vi',   name: 'E mineur',        type: 'min', notes: ['E', 'G', 'B'],    mood: 'Melancolisch',         role: 'Verwant aan G' },
+      { roman: 'vii°', name: 'F# verminderd',   type: 'dim', notes: ['F#', 'A', 'C'],   mood: 'Onrustig',             role: 'Spanningsnoot' },
+    ],
+  },
+  F: {
+    label: 'F majeur',
+    scale: ['F', 'G', 'A', 'Bb', 'C', 'D', 'E'],
+    chords: [
+      { roman: 'I',    name: 'F majeur',        type: 'maj', notes: ['F', 'A', 'C'],    mood: 'Warm, open',           role: 'Thuistoonsoort' },
+      { roman: 'ii',   name: 'G mineur',        type: 'min', notes: ['G', 'Bb', 'D'],   mood: 'Licht melancholisch',  role: 'Beweegt naar C of F' },
+      { roman: 'iii',  name: 'A mineur',        type: 'min', notes: ['A', 'C', 'E'],    mood: 'Intiem',               role: 'Geeft kleur' },
+      { roman: 'IV',   name: 'Bb majeur',       type: 'maj', notes: ['Bb', 'D', 'F'],   mood: 'Rijk, vol',            role: 'Karakteristiek voor F' },
+      { roman: 'V',    name: 'C majeur',        type: 'maj', notes: ['C', 'E', 'G'],    mood: 'Spanning',             role: 'Vraagt om F' },
+      { roman: 'vi',   name: 'D mineur',        type: 'min', notes: ['D', 'F', 'A'],    mood: 'Droevig, diep',        role: 'Verwant aan F' },
+      { roman: 'vii°', name: 'E verminderd',    type: 'dim', notes: ['E', 'G', 'Bb'],   mood: 'Onrustig',             role: 'Spanningsnoot' },
+    ],
+  },
+  D: {
+    label: 'D majeur',
+    scale: ['D', 'E', 'F#', 'G', 'A', 'B', 'C#'],
+    chords: [
+      { roman: 'I',    name: 'D majeur',        type: 'maj', notes: ['D', 'F#', 'A'],   mood: 'Helder, stralend',     role: 'Thuistoonsoort' },
+      { roman: 'ii',   name: 'E mineur',        type: 'min', notes: ['E', 'G', 'B'],    mood: 'Zacht',                role: 'Beweegt naar A of D' },
+      { roman: 'iii',  name: 'F# mineur',       type: 'min', notes: ['F#', 'A', 'C#'],  mood: 'Intens',               role: 'Geeft kleur' },
+      { roman: 'IV',   name: 'G majeur',        type: 'maj', notes: ['G', 'B', 'D'],    mood: 'Warm',                 role: 'Veel gebruikt vóór D' },
+      { roman: 'V',    name: 'A majeur',        type: 'maj', notes: ['A', 'C#', 'E'],   mood: 'Spanning',             role: 'Vraagt om D' },
+      { roman: 'vi',   name: 'B mineur',        type: 'min', notes: ['B', 'D', 'F#'],   mood: 'Melancolisch',         role: 'Verwant aan D' },
+      { roman: 'vii°', name: 'C# verminderd',   type: 'dim', notes: ['C#', 'E', 'G'],   mood: 'Onrustig',             role: 'Spanningsnoot' },
+    ],
+  },
+  Am: {
+    label: 'A mineur',
+    scale: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
+    chords: [
+      { roman: 'i',    name: 'A mineur',        type: 'min', notes: ['A', 'C', 'E'],    mood: 'Melancolisch, intens', role: 'Thuistoonsoort' },
+      { roman: 'ii°',  name: 'B verminderd',    type: 'dim', notes: ['B', 'D', 'F'],    mood: 'Onrustig',             role: 'Spanningsnoot' },
+      { roman: 'III',  name: 'C majeur',        type: 'maj', notes: ['C', 'E', 'G'],    mood: 'Licht, warm',          role: 'Contrast met Am' },
+      { roman: 'iv',   name: 'D mineur',        type: 'min', notes: ['D', 'F', 'A'],    mood: 'Droevig',              role: 'Diep en donker' },
+      { roman: 'V',    name: 'E majeur',        type: 'maj', notes: ['E', 'G#', 'B'],   mood: 'Spanning',             role: 'Klassieke oplossing naar Am' },
+      { roman: 'VI',   name: 'F majeur',        type: 'maj', notes: ['F', 'A', 'C'],    mood: 'Warm, troostend',      role: 'Geliefd in mineur' },
+      { roman: 'VII',  name: 'G majeur',        type: 'maj', notes: ['G', 'B', 'D'],    mood: 'Brede beweging',       role: 'Beweegt naar C of Am' },
+    ],
+  },
+  Em: {
+    label: 'E mineur',
+    scale: ['E', 'F#', 'G', 'A', 'B', 'C', 'D'],
+    chords: [
+      { roman: 'i',    name: 'E mineur',        type: 'min', notes: ['E', 'G', 'B'],    mood: 'Ingetogen, serieus',   role: 'Thuistoonsoort' },
+      { roman: 'ii°',  name: 'F# verminderd',   type: 'dim', notes: ['F#', 'A', 'C'],   mood: 'Onrustig',             role: 'Spanningsnoot' },
+      { roman: 'III',  name: 'G majeur',        type: 'maj', notes: ['G', 'B', 'D'],    mood: 'Licht',                role: 'Contrast' },
+      { roman: 'iv',   name: 'A mineur',        type: 'min', notes: ['A', 'C', 'E'],    mood: 'Warm, diep',           role: 'Verwant aan Em' },
+      { roman: 'V',    name: 'B majeur',        type: 'maj', notes: ['B', 'D#', 'F#'],  mood: 'Spanning',             role: 'Vraagt om Em' },
+      { roman: 'VI',   name: 'C majeur',        type: 'maj', notes: ['C', 'E', 'G'],    mood: 'Helder',               role: 'Mooi contrast' },
+      { roman: 'VII',  name: 'D majeur',        type: 'maj', notes: ['D', 'F#', 'A'],   mood: 'Beweging',             role: 'Beweegt naar Em of G' },
+    ],
+  },
+  Dm: {
+    label: 'D mineur',
+    scale: ['D', 'E', 'F', 'G', 'A', 'Bb', 'C'],
+    chords: [
+      { roman: 'i',    name: 'D mineur',        type: 'min', notes: ['D', 'F', 'A'],    mood: 'Droevig, ernstig',     role: 'Thuistoonsoort' },
+      { roman: 'ii°',  name: 'E verminderd',    type: 'dim', notes: ['E', 'G', 'Bb'],   mood: 'Onrustig',             role: 'Spanningsnoot' },
+      { roman: 'III',  name: 'F majeur',        type: 'maj', notes: ['F', 'A', 'C'],    mood: 'Warm',                 role: 'Contrast' },
+      { roman: 'iv',   name: 'G mineur',        type: 'min', notes: ['G', 'Bb', 'D'],   mood: 'Donker',               role: 'Verwant aan Dm' },
+      { roman: 'V',    name: 'A majeur',        type: 'maj', notes: ['A', 'C#', 'E'],   mood: 'Spanning',             role: 'Vraagt om Dm' },
+      { roman: 'VI',   name: 'Bb majeur',       type: 'maj', notes: ['Bb', 'D', 'F'],   mood: 'Rijk, vol',            role: 'Karakteristiek' },
+      { roman: 'VII',  name: 'C majeur',        type: 'maj', notes: ['C', 'E', 'G'],    mood: 'Beweging',             role: 'Beweegt naar F of Dm' },
+    ],
+  },
+}

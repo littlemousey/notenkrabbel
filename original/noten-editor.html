@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎼 Noten Editor</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+
+:root {
+  --ink:    #1a1008;
+  --paper:  #f9f4e8;
+  --aged:   #ede5cc;
+  --line:   #b8995a;
+  --accent: #8b2e00;
+  --gold:   #c4955a;
+  --soft:   #d9c9a8;
+  --green:  #2e6e2e;
+  --shadow: rgba(26,16,8,0.18);
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+
+body {
+  background:var(--paper); font-family:'Lora',serif; color:var(--ink); min-height:100vh;
+  background-image:
+    repeating-linear-gradient(0deg,transparent,transparent 27px,rgba(184,153,90,0.07) 28px),
+    radial-gradient(ellipse at 50% 0%,rgba(196,149,90,0.12) 0%,transparent 60%);
+}
+
+header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:1.1rem 2rem; border-bottom:1px solid var(--soft);
+  background:rgba(249,244,232,0.95); backdrop-filter:blur(4px);
+  position:sticky; top:0; z-index:20;
+}
+.logo { font-family:'Playfair Display',serif; font-style:italic; font-size:1.35rem; display:flex; align-items:center; gap:0.5rem; }
+.header-actions { display:flex; gap:0.6rem; align-items:center; }
+
+.main { max-width:980px; margin:0 auto; padding:1.8rem 1.5rem 4rem; }
+
+/* ── Toolbar ── */
+.toolbar {
+  display:flex; flex-wrap:wrap; gap:0.45rem; align-items:center;
+  background:white; border:1px solid var(--soft); border-radius:12px;
+  padding:0.75rem 1rem; margin-bottom:1.4rem; box-shadow:0 2px 8px var(--shadow);
+}
+.tool-group {
+  display:flex; gap:0.28rem; align-items:center;
+  padding-right:0.75rem; border-right:1px solid var(--soft);
+}
+.tool-group:last-child { border-right:none; padding-right:0; }
+.tool-label { font-size:0.67rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold); margin-right:0.25rem; white-space:nowrap; }
+
+.tool-btn {
+  background:var(--aged); border:1.5px solid var(--soft); border-radius:7px;
+  padding:0.32rem 0.6rem; font-family:'Lora',serif; font-size:0.83rem;
+  color:var(--ink); cursor:pointer; transition:all 0.13s; white-space:nowrap; line-height:1;
+}
+.tool-btn:hover { background:var(--soft); border-color:var(--gold); }
+.tool-btn.active { background:var(--accent); border-color:var(--accent); color:white; box-shadow:0 2px 7px rgba(139,46,0,0.28); }
+.tool-btn.danger:hover { background:#fff0e8; border-color:var(--accent); color:var(--accent); }
+
+/* ── Score card ── */
+.score-wrap {
+  background:white; border:1px solid var(--soft); border-radius:14px;
+  padding:1.4rem 1rem 0.8rem; box-shadow:0 4px 20px var(--shadow);
+  margin-bottom:1.3rem; position:relative; overflow:hidden;
+}
+.score-wrap::before { content:''; position:absolute; top:0;left:0;right:0; height:4px; background:linear-gradient(to right,var(--accent),var(--gold)); }
+
+.score-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.7rem; padding:0 0.4rem; }
+.score-title-edit {
+  font-family:'Playfair Display',serif; font-style:italic; font-size:1.15rem;
+  border:none; background:transparent; color:var(--ink); width:240px; outline:none;
+  border-bottom:1px dashed var(--soft); padding-bottom:2px;
+}
+.score-title-edit:focus { border-bottom-color:var(--gold); }
+.score-info { font-size:0.75rem; color:var(--gold); text-align:right; line-height:1.6; }
+
+#staffContainer { overflow-x:auto; }
+#staffSvg { display:block; min-width:680px; user-select:none; }
+
+/* ── Hint bar ── */
+.hint-bar {
+  font-size:0.78rem; color:#999; font-style:italic;
+  padding:0.45rem 0.5rem; border-top:1px solid var(--aged);
+  margin-top:0.3rem; min-height:1.9rem; transition:color 0.2s;
+}
+.hint-bar.selecting { color:var(--green); font-style:normal; font-weight:600; }
+
+/* ── Play row ── */
+.play-row {
+  display:flex; align-items:center; gap:0.9rem;
+  padding:0.75rem 1rem; background:var(--aged);
+  border-radius:10px; margin-bottom:1.3rem;
+  border:1px solid var(--soft); flex-wrap:wrap;
+}
+.btn-play-main {
+  background:var(--accent); color:white; border:none; border-radius:30px;
+  padding:0.52rem 1.5rem; font-family:'Lora',serif; font-size:0.92rem;
+  cursor:pointer; transition:all 0.18s; box-shadow:0 3px 10px rgba(139,46,0,0.22);
+  display:flex; align-items:center; gap:0.4rem;
+}
+.btn-play-main:hover { background:#6a2200; transform:translateY(-1px); }
+.btn-play-main.playing { background:#2e6e2e; }
+.btn-small {
+  background:white; border:1.5px solid var(--soft); border-radius:20px;
+  padding:0.38rem 0.85rem; font-family:'Lora',serif; font-size:0.8rem;
+  color:var(--ink); cursor:pointer; transition:all 0.13s;
+}
+.btn-small:hover { border-color:var(--gold); color:var(--accent); }
+.tempo-row { display:flex; align-items:center; gap:0.45rem; font-size:0.8rem; color:#888; margin-left:auto; }
+input[type=range] { -webkit-appearance:none; height:3px; background:var(--soft); border-radius:2px; width:68px; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:12px; height:12px; background:var(--accent); border-radius:50%; cursor:pointer; }
+
+/* ── Note chips ── */
+.note-list-wrap {
+  background:white; border:1px solid var(--soft); border-radius:12px;
+  padding:0.95rem 1.1rem; box-shadow:0 2px 8px var(--shadow);
+}
+.note-list-title { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--gold); margin-bottom:0.7rem; }
+.note-chips { display:flex; flex-wrap:wrap; gap:0.38rem; align-items:flex-start; }
+
+.note-chip {
+  display:inline-flex; flex-direction:column; align-items:center;
+  background:var(--aged); border:1.5px solid var(--soft);
+  border-radius:8px; padding:0.28rem 0.55rem 0.22rem;
+  font-family:'Playfair Display',serif; font-size:0.85rem;
+  cursor:pointer; transition:all 0.12s; min-width:38px; position:relative;
+  user-select:none;
+}
+.note-chip:hover { background:#fff0e8; border-color:var(--accent); }
+.note-chip.chord-chip { border-color:var(--green); background:#eaf4ea; }
+/* selected = this slot is active for chord editing */
+.note-chip.slot-selected { background:var(--green); border-color:var(--green); color:white; box-shadow:0 0 0 3px rgba(46,110,46,0.25); }
+.note-chip.playing-chip { background:var(--accent); border-color:var(--accent); color:white; }
+.note-chip .chip-dur { font-size:0.57rem; font-family:'Lora',serif; opacity:0.65; margin-top:1px; }
+.note-chip .chip-idx { font-size:0.48rem; position:absolute; top:2px; left:3px; opacity:0.3; }
+.note-chip .chip-del {
+  position:absolute; top:-7px; right:-7px;
+  width:16px; height:16px; background:var(--accent); color:white;
+  border-radius:50%; font-size:0.65rem; line-height:16px; text-align:center;
+  opacity:0; transition:opacity 0.13s; cursor:pointer; z-index:2;
+  box-shadow:0 1px 4px rgba(0,0,0,0.3);
+}
+.note-chip:hover .chip-del,
+.note-chip.slot-selected .chip-del { opacity:1; }
+
+/* drag-over indicator */
+.note-chip.drag-over { outline:2px solid var(--accent); outline-offset:2px; }
+
+.empty-hint { font-size:0.82rem; color:var(--soft); font-style:italic; padding:0.4rem; }
+
+/* Drag ghost */
+.drag-ghost {
+  position:fixed; pointer-events:none; z-index:50; display:none;
+  background:var(--accent); color:white; border-radius:6px;
+  padding:0.2rem 0.55rem; font-size:0.78rem; font-family:'Lora',serif;
+  opacity:0.88; transform:translate(-50%,-130%);
+}
+
+/* Tooltip */
+#tooltip {
+  position:fixed; background:var(--ink); color:var(--paper);
+  padding:0.28rem 0.65rem; border-radius:5px; font-size:0.73rem;
+  pointer-events:none; opacity:0; transition:opacity 0.1s; z-index:100;
+  font-family:'Lora',serif; white-space:nowrap;
+}
+
+/* ── Chord Assistant ── */
+.chord-assistant {
+  background:white; border:1px solid var(--soft); border-radius:14px;
+  padding:1.1rem 1.2rem; box-shadow:0 4px 20px var(--shadow);
+  margin-bottom:1.3rem; position:relative; overflow:hidden;
+  display:none; /* shown when slot selected */
+}
+.chord-assistant.visible { display:block; }
+.chord-assistant::before { content:''; position:absolute; top:0;left:0;right:0; height:4px; background:linear-gradient(to right,var(--green),#8bc48a); }
+
+.ca-header {
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:0.9rem;
+}
+.ca-title { font-family:'Playfair Display',serif; font-style:italic; font-size:1.05rem; color:var(--ink); }
+.ca-key-row { display:flex; align-items:center; gap:0.5rem; font-size:0.78rem; color:var(--gold); }
+.ca-key-select {
+  font-family:'Lora',serif; font-size:0.78rem; border:1px solid var(--soft);
+  border-radius:6px; padding:0.2rem 0.4rem; background:var(--aged); color:var(--ink);
+  cursor:pointer;
+}
+
+/* Current pitches analysis */
+.ca-analysis {
+  font-size:0.82rem; color:#666; margin-bottom:0.9rem; padding:0.5rem 0.7rem;
+  background:var(--aged); border-radius:8px; line-height:1.6;
+}
+.ca-analysis .match-name { font-weight:600; color:var(--green); font-family:'Playfair Display',serif; font-size:0.95rem; }
+.ca-analysis .out-of-key { color:var(--accent); font-weight:600; }
+
+/* Chord grid */
+.ca-label { font-size:0.67rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold); margin-bottom:0.55rem; }
+
+.chord-grid { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:0.9rem; }
+
+.chord-card {
+  border:1.5px solid var(--soft); border-radius:10px;
+  padding:0.5rem 0.7rem; cursor:pointer; transition:all 0.15s;
+  background:var(--aged); min-width:90px;
+  position:relative;
+}
+.chord-card:hover { border-color:var(--green); background:#f0f8f0; transform:translateY(-1px); box-shadow:0 3px 10px rgba(46,110,46,0.15); }
+.chord-card.best-match { border-color:var(--green); background:#eaf4ea; box-shadow:0 0 0 2px rgba(46,110,46,0.2); }
+.chord-card.partially-matches { border-color:var(--gold); background:#fdf6e8; }
+
+.chord-card .cc-roman { font-size:0.65rem; color:#aaa; margin-bottom:0.1rem; font-family:'Lora',serif; }
+.chord-card .cc-name { font-family:'Playfair Display',serif; font-size:0.92rem; font-weight:700; color:var(--ink); }
+.chord-card .cc-notes { font-size:0.68rem; color:#888; margin-top:0.15rem; letter-spacing:0.02em; }
+.chord-card .cc-mood { font-size:0.65rem; color:var(--gold); font-style:italic; margin-top:0.1rem; }
+.chord-card .cc-badge {
+  position:absolute; top:-7px; right:-7px; background:var(--green); color:white;
+  font-size:0.55rem; border-radius:10px; padding:0.1rem 0.35rem; font-family:'Lora',serif;
+  white-space:nowrap;
+}
+.chord-card.best-match .cc-badge { display:block; }
+.chord-card:not(.best-match) .cc-badge { display:none; }
+
+/* Suggestion row: notes to add */
+.ca-suggest { margin-top:0.2rem; }
+.ca-suggest-label { font-size:0.67rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold); margin-bottom:0.45rem; }
+.suggest-pills { display:flex; flex-wrap:wrap; gap:0.35rem; }
+.suggest-pill {
+  display:inline-flex; align-items:center; gap:0.3rem;
+  background:#eaf4ea; border:1.5px solid var(--green); border-radius:20px;
+  padding:0.25rem 0.7rem; font-family:'Playfair Display',serif; font-size:0.85rem;
+  color:var(--green); cursor:pointer; transition:all 0.13s;
+}
+.suggest-pill:hover { background:var(--green); color:white; transform:translateY(-1px); }
+.suggest-pill .sp-note { font-weight:700; }
+.suggest-pill .sp-role { font-size:0.62rem; opacity:0.7; font-family:'Lora',serif; }
+
+.out-pill {
+  background:#fef0e8; border-color:var(--accent); color:var(--accent);
+}
+.out-pill:hover { background:var(--accent); color:white; }
+
+.no-suggest { font-size:0.82rem; color:var(--green); font-style:italic; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🎼 Noten Editor</div>
+  <div class="header-actions">
+    <button class="btn-small" onclick="clearAll()">✕ Alles wissen</button>
+    <button class="btn-small" onclick="exportNotes()">↓ Exporteer</button>
+  </div>
+</header>
+
+<div class="main">
+
+  <div class="toolbar">
+
+    <div class="tool-group">
+      <span class="tool-label">Duur</span>
+      <button class="tool-btn" id="dur-0.25" onclick="setDur(0.25)">𝅘𝅥𝅯 1/16</button>
+      <button class="tool-btn" id="dur-0.5"  onclick="setDur(0.5)">♪ 1/8</button>
+      <button class="tool-btn active" id="dur-1" onclick="setDur(1)">♩ 1/4</button>
+      <button class="tool-btn" id="dur-1.5" onclick="setDur(1.5)">𝅗𝅥. 3/8</button>
+      <button class="tool-btn" id="dur-2"   onclick="setDur(2)">𝅗𝅥 1/2</button>
+      <button class="tool-btn" id="dur-3"   onclick="setDur(3)">𝅝 3/4</button>
+    </div>
+
+    <div class="tool-group">
+      <span class="tool-label">Voorteken</span>
+      <button class="tool-btn active" id="acc-natural" onclick="setAcc('')">♮</button>
+      <button class="tool-btn" id="acc-sharp"   onclick="setAcc('#')">♯</button>
+      <button class="tool-btn" id="acc-flat"    onclick="setAcc('b')">♭</button>
+    </div>
+
+    <div class="tool-group">
+      <span class="tool-label">Maat</span>
+      <button class="tool-btn" id="meter-3" onclick="setMeter(3)">3/4</button>
+      <button class="tool-btn active" id="meter-4" onclick="setMeter(4)">4/4</button>
+    </div>
+
+    <div class="tool-group">
+      <span class="tool-label">Bewerken</span>
+      <button class="tool-btn danger" onclick="undoLast()">↩ Ongedaan</button>
+      <button class="tool-btn danger" onclick="deselect()">✕ Deselecteer</button>
+    </div>
+
+  </div>
+
+  <div class="score-wrap">
+    <div class="score-header">
+      <input class="score-title-edit" id="scoreTitle" type="text" value="Mijn melodie" spellcheck="false"/>
+      <div class="score-info" id="scoreInfo">0 noten · 4/4</div>
+    </div>
+    <div id="staffContainer">
+      <svg id="staffSvg" viewBox="0 0 700 175" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="hint-bar" id="hintBar">
+      Klik op de notenbalk om een noot te plaatsen · klik op een bestaande noot of chip om hem te selecteren voor een akkoord
+    </div>
+  </div>
+
+  <!-- Chord Assistant — zichtbaar wanneer een slot geselecteerd is -->
+  <div class="chord-assistant" id="chordAssistant">
+    <div class="ca-header">
+      <div class="ca-title">🎹 Akkoordassistent</div>
+      <div class="ca-key-row">
+        Toonsoort:
+        <select class="ca-key-select" id="keySelect" onchange="onKeyChange()">
+          <option value="C">C majeur</option>
+          <option value="G">G majeur</option>
+          <option value="F">F majeur</option>
+          <option value="D">D majeur</option>
+          <option value="Am">A mineur</option>
+          <option value="Em">E mineur</option>
+          <option value="Dm">D mineur</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Analyse van het geselecteerde slot -->
+    <div class="ca-analysis" id="caAnalysis">Selecteer een noot om de akkoordassistent te starten.</div>
+
+    <!-- Alle zeven akkoorden van de toonsoort -->
+    <div class="ca-label">Akkoorden in deze toonsoort — klik om meteen in te voegen</div>
+    <div class="chord-grid" id="chordGrid"></div>
+
+    <!-- Suggesties: welke noten ontbreken voor het beste akkoord -->
+    <div class="ca-suggest" id="caSuggest" style="display:none">
+      <div class="ca-suggest-label">Voeg toe aan het geselecteerde slot</div>
+      <div class="suggest-pills" id="suggestPills"></div>
+    </div>
+  </div>
+
+  <div class="play-row">
+    <button class="btn-play-main" id="playBtn" onclick="togglePlay()">▶ Afspelen</button>
+    <button class="btn-small" onclick="stopPlayback()">⏹ Stop</button>
+    <div class="tempo-row">
+      <span>Tempo</span>
+      <input type="range" id="tempoSlider" min="40" max="180" value="90" oninput="updateTempo(this.value)">
+      <span id="tempoVal">90</span><span style="opacity:.45;margin-left:2px">♩/min</span>
+    </div>
+  </div>
+
+  <div class="note-list-wrap">
+    <div class="note-list-title">
+      Noten in volgorde — klik om te selecteren/beluisteren · sleep om te verplaatsen · × om te verwijderen
+    </div>
+    <div class="note-chips" id="noteChips">
+      <span class="empty-hint">Nog geen noten — klik op de notenbalk om te beginnen…</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="drag-ghost" id="dragGhost"></div>
+<div id="tooltip"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA MODEL
+// slots: [{id, dur, pitches:[{name,acc,octave}]}]
+// selectedSlotId: which slot is "open" for chord adding (or null)
+// ═══════════════════════════════════════════════════════════
+let slots = [];
+let nextId = 0;
+let selectedSlotId = null;  // the slot currently selected for chord editing
+
+let selectedDur = 1;
+let selectedAcc = '';
+let beatsPerMeasure = 4;
+let tempo = 90;
+let hoveredNote = null;
+let hoverX = null;
+
+let isPlaying = false;
+let playTimeouts = [];
+let dragSrcIdx = null;
+
+// ═══════════════════════════════════════════════════════════
+// AUDIO
+// ═══════════════════════════════════════════════════════════
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let ctx = null, masterGain = null;
+
+function getCtx() {
+  if (!ctx) {
+    ctx = new AudioCtx();
+    masterGain = ctx.createGain();
+    masterGain.gain.value = 0.5;
+    masterGain.connect(ctx.destination);
+  }
+  return ctx;
+}
+
+function noteToFreq(name, acc, octave) {
+  const base = {C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+  const semi = (base[name]||0) + (acc==='#'?1:acc==='b'?-1:0);
+  return 440 * Math.pow(2, (semi-9+(octave-4)*12)/12);
+}
+
+function _play(freq, startTime, dur, vol=0.38) {
+  const c = getCtx();
+  const osc = c.createOscillator(), gain = c.createGain();
+  osc.connect(gain); gain.connect(masterGain);
+  osc.type = 'triangle'; osc.frequency.value = freq;
+  const rel = Math.min(0.1, dur*0.28);
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(vol, startTime+0.015);
+  gain.gain.setValueAtTime(vol, startTime+dur-rel);
+  gain.gain.linearRampToValueAtTime(0, startTime+dur);
+  osc.start(startTime); osc.stop(startTime+dur+0.05);
+}
+
+function previewSlot(sl) {
+  const c = getCtx(), beat = 60/tempo;
+  const dur = Math.min(sl.dur*beat*0.9, 0.8);
+  sl.pitches.forEach(p => _play(noteToFreq(p.name,p.acc,p.octave), c.currentTime+0.01, dur, 0.35));
+}
+
+function previewPitch(name, acc, octave) {
+  const c = getCtx();
+  _play(noteToFreq(name,acc,octave), c.currentTime+0.01, 0.35, 0.32);
+}
+
+function stopPlayback() {
+  playTimeouts.forEach(id => { try{clearTimeout(id);clearInterval(id);}catch(e){} });
+  playTimeouts = []; isPlaying = false;
+  const btn = document.getElementById('playBtn');
+  btn.textContent='▶ Afspelen'; btn.classList.remove('playing');
+  document.querySelectorAll('.note-chip').forEach(c=>c.classList.remove('playing-chip'));
+  document.querySelectorAll('[id^="ring-"]').forEach(r=>r.setAttribute('opacity','0'));
+}
+
+function togglePlay() {
+  if (isPlaying) { stopPlayback(); return; }
+  if (!slots.length) return;
+  if (ctx) { ctx.close(); ctx=null; masterGain=null; }
+  getCtx(); isPlaying=true;
+  const btn=document.getElementById('playBtn');
+  btn.textContent='■ Stop'; btn.classList.add('playing');
+  const beat=60/tempo; let offset=0;
+  slots.forEach(sl => {
+    const dur=sl.dur*beat, t=ctx.currentTime+offset+0.05;
+    sl.pitches.forEach(p=>_play(noteToFreq(p.name,p.acc,p.octave),t,dur*0.88,0.35));
+    const id1=setTimeout(()=>{
+      document.querySelectorAll('.note-chip').forEach(c=>c.classList.remove('playing-chip'));
+      document.querySelectorAll(`.note-chip[data-slotid="${sl.id}"]`).forEach(c=>c.classList.add('playing-chip'));
+      sl.pitches.forEach(p=>{
+        const r=document.getElementById(`ring-${sl.id}-${p.name}${p.acc}${p.octave}`);
+        if(r) r.setAttribute('opacity','0.85');
+      });
+    }, offset*1000);
+    const id2=setTimeout(()=>{
+      sl.pitches.forEach(p=>{
+        const r=document.getElementById(`ring-${sl.id}-${p.name}${p.acc}${p.octave}`);
+        if(r) r.setAttribute('opacity','0');
+      });
+    }, (offset+dur*0.85)*1000);
+    playTimeouts.push(id1,id2); offset+=dur;
+  });
+  const total=slots.reduce((s,sl)=>s+sl.dur*(60/tempo),0);
+  playTimeouts.push(setTimeout(stopPlayback, total*1000+300));
+}
+
+// ═══════════════════════════════════════════════════════════
+// LAYOUT
+// ═══════════════════════════════════════════════════════════
+const LINE_GAP=13, STAFF_BOTTOM=122, STAFF_TOP=STAFF_BOTTOM-4*LINE_GAP;
+const LEFT_MARGIN=74, NOTE_START=LEFT_MARGIN+20, EXTRA=55;
+
+function slotWidth(dur) {
+  return {0.25:22,0.5:29,1:39,1.5:50,2:58,3:72}[dur]||39;
+}
+function computeX() {
+  let xs=[], x=NOTE_START+16;
+  slots.forEach(sl=>{ xs.push(x); x+=slotWidth(sl.dur); });
+  return {xs, totalW:x+EXTRA};
+}
+function staffY(name,octave) {
+  const s={C:0,D:1,E:2,F:3,G:4,A:5,B:6};
+  return STAFF_BOTTOM-(((octave-4)*7+(s[name]||0))-2)*(LINE_GAP/2);
+}
+function snapPitch(svgY) {
+  const names=['C','D','E','F','G','A','B'];
+  const steps=Math.round((STAFF_BOTTOM-svgY)/(LINE_GAP/2));
+  const abs=steps+2, oct=Math.floor(abs/7)+4, idx=((abs%7)+7)%7;
+  return {name:names[idx], acc:selectedAcc, octave:oct};
+}
+
+// ═══════════════════════════════════════════════════════════
+// HIT-TEST: find which slot was clicked in the SVG
+// returns slotId or null
+// ═══════════════════════════════════════════════════════════
+function hitTestSlot(svgX, svgY) {
+  const {xs} = computeX();
+  for (let i=0; i<slots.length; i++) {
+    const sl=slots[i], x=xs[i];
+    const hw = slotWidth(sl.dur)/2 + 4; // half-width hit area
+    if (Math.abs(svgX-x) > hw) continue;
+    // check if any pitch is close in Y
+    for (const p of sl.pitches) {
+      const py = staffY(p.name, p.octave);
+      if (Math.abs(svgY-py) <= 8) return sl.id;
+    }
+    // also allow clicking anywhere in the slot's x band if close to any note Y
+    if (Math.abs(svgX-x) <= hw) {
+      // accept if within the general staff + ledger zone
+      const slotMinY = Math.min(...sl.pitches.map(p=>staffY(p.name,p.octave))) - 8;
+      const slotMaxY = Math.max(...sl.pitches.map(p=>staffY(p.name,p.octave))) + 8;
+      if (svgY >= slotMinY && svgY <= slotMaxY) return sl.id;
+    }
+  }
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════
+// DRAW
+// ═══════════════════════════════════════════════════════════
+function drawStaff() {
+  const svg=document.getElementById('staffSvg');
+  const ns='http://www.w3.org/2000/svg';
+  const {xs,totalW}=computeX();
+  const svgW=Math.max(700,totalW);
+  svg.setAttribute('viewBox',`0 0 ${svgW} 175`);
+  svg.setAttribute('width',svgW);
+  svg.innerHTML='';
+
+  function el(tag,attrs,text){
+    const e=document.createElementNS(ns,tag);
+    Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));
+    if(text!==undefined) e.textContent=text;
+    return e;
+  }
+
+  // Staff lines
+  for(let i=0;i<5;i++){
+    const y=STAFF_BOTTOM-i*LINE_GAP;
+    svg.appendChild(el('line',{x1:LEFT_MARGIN-8,x2:svgW-10,y1:y,y2:y,stroke:'#b8995a','stroke-width':'1'}));
+  }
+
+  // Selected slot highlight band
+  if (selectedSlotId !== null) {
+    const si = slots.findIndex(s=>s.id===selectedSlotId);
+    if (si>=0) {
+      const sx=xs[si], sw=slotWidth(slots[si].dur);
+      svg.appendChild(el('rect',{
+        x:sx-8, y:STAFF_TOP-LINE_GAP*3.5,
+        width:sw+4,
+        height:(STAFF_BOTTOM+LINE_GAP*3.5)-(STAFF_TOP-LINE_GAP*3.5),
+        fill:'rgba(46,110,46,0.10)', rx:'5',
+        stroke:'rgba(46,110,46,0.35)','stroke-width':'1','stroke-dasharray':'3,3'
+      }));
+    }
+  }
+
+  // Treble clef
+  svg.appendChild(el('text',{x:'5',y:STAFF_BOTTOM+6,'font-size':'68',fill:'#8b6343','font-family':'serif'},'𝄞'));
+
+  // Time signature
+  svg.appendChild(el('text',{x:LEFT_MARGIN-2,y:STAFF_BOTTOM-LINE_GAP*1.2,'font-size':'16',fill:'#8b6343','font-weight':'bold'},String(beatsPerMeasure)));
+  svg.appendChild(el('text',{x:LEFT_MARGIN-2,y:STAFF_BOTTOM+1,'font-size':'16',fill:'#8b6343','font-weight':'bold'},'4'));
+
+  // Barlines
+  let beatAcc=0;
+  slots.forEach((sl,i)=>{
+    beatAcc+=sl.dur;
+    if(Math.abs(Math.round(beatAcc*100)%Math.round(beatsPerMeasure*100))<1 && i<slots.length-1){
+      const bx=(xs[i]||0)+slotWidth(sl.dur)-2;
+      svg.appendChild(el('line',{x1:bx,x2:bx,y1:STAFF_TOP,y2:STAFF_BOTTOM,stroke:'#b8995a','stroke-width':'1.2'}));
+    }
+  });
+
+  // Ghost note
+  if (hoveredNote && hoverX) {
+    const gy=staffY(hoveredNote.name,hoveredNote.octave);
+    drawNoteHead(svg,el,hoverX,gy,selectedDur,hoveredNote.acc,true,null,null);
+  }
+
+  // Placed slots
+  slots.forEach((sl,i)=>{
+    const x=xs[i];
+    const isSelected=sl.id===selectedSlotId;
+    sl.pitches.forEach(p=>{
+      const y=staffY(p.name,p.octave);
+      drawNoteHead(svg,el,x,y,sl.dur,p.acc,false,sl.id,p,isSelected);
+    });
+    // Chord connector
+    if(sl.pitches.length>1){
+      const ys=sl.pitches.map(p=>staffY(p.name,p.octave));
+      svg.appendChild(el('line',{x1:x,x2:x,y1:Math.min(...ys),y2:Math.max(...ys),stroke:'#1a1008','stroke-width':'1.3'}));
+    }
+    // Clickable hit area per slot (invisible, handles slot selection)
+    const slMinY=Math.min(...sl.pitches.map(p=>staffY(p.name,p.octave)))-12;
+    const slMaxY=Math.max(...sl.pitches.map(p=>staffY(p.name,p.octave)))+12;
+    const hitRect=el('rect',{
+      x:x-slotWidth(sl.dur)/2+2, y:slMinY,
+      width:slotWidth(sl.dur)-4, height:slMaxY-slMinY,
+      fill:'transparent', cursor:'pointer'
+    });
+    hitRect.addEventListener('click',e=>{ e.stopPropagation(); selectSlot(sl.id); });
+    svg.appendChild(hitRect);
+  });
+
+  // End barlines
+  const endX=totalW-EXTRA+8;
+  svg.appendChild(el('line',{x1:endX,x2:endX,y1:STAFF_TOP,y2:STAFF_BOTTOM,stroke:'#8b6343','stroke-width':'2.5'}));
+  svg.appendChild(el('line',{x1:endX+4,x2:endX+4,y1:STAFF_TOP,y2:STAFF_BOTTOM,stroke:'#8b6343','stroke-width':'5'}));
+  svg.appendChild(el('line',{x1:LEFT_MARGIN-8,x2:LEFT_MARGIN-8,y1:STAFF_TOP,y2:STAFF_BOTTOM,stroke:'#8b6343','stroke-width':'1.5'}));
+
+  // Background overlay for new note placement (behind hit rects)
+  // Click on empty area = add new note (or add to selected slot)
+  const overlay=el('rect',{
+    x:NOTE_START, y:STAFF_TOP-LINE_GAP*4,
+    width:svgW-NOTE_START-12,
+    height:(STAFF_BOTTOM+LINE_GAP*4)-(STAFF_TOP-LINE_GAP*4),
+    fill:'transparent', cursor:'crosshair'
+  });
+  overlay.addEventListener('mousemove',onStaffHover);
+  overlay.addEventListener('mouseleave',()=>{hoveredNote=null;hoverX=null;drawStaff();hideTooltip();});
+  overlay.addEventListener('click',onStaffClick);
+  // Insert overlay BEFORE the hit rects so note hit rects are on top
+  svg.insertBefore(overlay, svg.children[svg.children.length - slots.length*2 - 4] || svg.firstChild);
+}
+
+function drawNoteHead(svg, el, x, y, dur, acc, isGhost, slotId, pitch, isSelected=false) {
+  const color = isGhost ? '#8b2e00' : isSelected ? '#2e6e2e' : '#1a1008';
+  const op = isGhost ? '0.32' : '1';
+
+  // Ledger lines above
+  if(y<STAFF_TOP-2)
+    for(let ly=STAFF_TOP-LINE_GAP;ly>=y-2;ly-=LINE_GAP)
+      svg.appendChild(el('line',{x1:x-9,x2:x+9,y1:ly,y2:ly,stroke:color,'stroke-width':'1',opacity:op}));
+  // Ledger lines below
+  if(y>STAFF_BOTTOM+2)
+    for(let ly=STAFF_BOTTOM+LINE_GAP;ly<=y+2;ly+=LINE_GAP)
+      svg.appendChild(el('line',{x1:x-9,x2:x+9,y1:ly,y2:ly,stroke:color,'stroke-width':'1',opacity:op}));
+
+  // Accidental
+  if(acc==='#') svg.appendChild(el('text',{x:x-14,y:y+4,'font-size':'11',fill:color,'font-family':'serif',opacity:op},'♯'));
+  else if(acc==='b') svg.appendChild(el('text',{x:x-12,y:y+5,'font-size':'12',fill:color,'font-family':'serif',opacity:op},'♭'));
+
+  // Note head
+  const filled=dur<2;
+  svg.appendChild(el('ellipse',{cx:x,cy:y,rx:'5.5',ry:'3.8',
+    fill:filled?color:'none',stroke:color,'stroke-width':isSelected?'2':'1.5',
+    transform:`rotate(-18,${x},${y})`,opacity:op}));
+
+  // Stem
+  if(dur<3){
+    const up=y>STAFF_BOTTOM-2*LINE_GAP;
+    const sx=up?x+5:x-5, sy2=up?y-30:y+30;
+    svg.appendChild(el('line',{x1:sx,x2:sx,y1:y,y2:sy2,stroke:color,'stroke-width':'1.3',opacity:op}));
+    if(dur<=0.5){
+      const ns2='http://www.w3.org/2000/svg';
+      const f1=document.createElementNS(ns2,'path');
+      f1.setAttribute('d',up?`M${sx},${y-30} C${sx+11},${y-22} ${sx+13},${y-15} ${sx+5},${y-9}`
+                          :`M${sx},${y+30} C${sx-11},${y+22} ${sx-13},${y+15} ${sx-5},${y+9}`);
+      f1.setAttribute('fill','none');f1.setAttribute('stroke',color);f1.setAttribute('stroke-width','1.3');f1.setAttribute('opacity',op);
+      svg.appendChild(f1);
+      if(dur<=0.25){
+        const f2=document.createElementNS(ns2,'path');
+        f2.setAttribute('d',up?`M${sx},${y-22} C${sx+11},${y-14} ${sx+13},${y-7} ${sx+5},${y-1}`
+                            :`M${sx},${y+22} C${sx-11},${y+14} ${sx-13},${y+7} ${sx-5},${y+1}`);
+        f2.setAttribute('fill','none');f2.setAttribute('stroke',color);f2.setAttribute('stroke-width','1.3');f2.setAttribute('opacity',op);
+        svg.appendChild(f2);
+      }
+    }
+  }
+
+  // Dot
+  if(dur===1.5||dur===0.75)
+    svg.appendChild(el('circle',{cx:x+9,cy:y-1,r:'2.2',fill:color,opacity:op}));
+
+  // Playback ring
+  if(!isGhost&&slotId!==null&&pitch!==null)
+    svg.appendChild(el('ellipse',{cx:x,cy:y,rx:'9.5',ry:'7.5',fill:'none',
+      stroke:'#2e6e2e','stroke-width':'2',opacity:'0',
+      id:`ring-${slotId}-${pitch.name}${pitch.acc}${pitch.octave}`}));
+}
+
+// ═══════════════════════════════════════════════════════════
+// SLOT SELECTION (for chord editing)
+// ═══════════════════════════════════════════════════════════
+function selectSlot(id) {
+  if (selectedSlotId === id) {
+    selectedSlotId = null;
+  } else {
+    selectedSlotId = id;
+    const sl = slots.find(s=>s.id===id);
+    if (sl) previewSlot(sl);
+  }
+  updateHint();
+  drawStaff();
+  renderChips();
+  updateChordAssistant();
+}
+
+function deselect() {
+  selectedSlotId = null;
+  updateHint();
+  drawStaff();
+  renderChips();
+  updateChordAssistant();
+}
+
+function updateHint() {
+  const bar = document.getElementById('hintBar');
+  if (selectedSlotId !== null) {
+    const sl = slots.find(s=>s.id===selectedSlotId);
+    const pitchNames = sl ? sl.pitches.map(p=>p.name+(p.acc==='#'?'♯':p.acc==='b'?'♭':'')+p.octave).join(', ') : '';
+    bar.textContent = `🎹 Geselecteerd: ${pitchNames} — klik op de balk om een noot toe te voegen aan dit akkoord · klik nogmaals op de noot of op ✕ Deselecteer om de selectie op te heffen`;
+    bar.className = 'hint-bar selecting';
+  } else {
+    bar.textContent = 'Klik op de notenbalk om een noot te plaatsen · klik op een bestaande noot of chip om hem te selecteren voor een akkoord';
+    bar.className = 'hint-bar';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// HOVER + CLICK
+// ═══════════════════════════════════════════════════════════
+function getSvgXY(evt){
+  const svg=document.getElementById('staffSvg');
+  const rect=svg.getBoundingClientRect();
+  const vb=svg.viewBox.baseVal;
+  return {x:(evt.clientX-rect.left)*(vb.width/rect.width), y:(evt.clientY-rect.top)*(vb.height/rect.height)};
+}
+
+function onStaffHover(evt){
+  const {x,y}=getSvgXY(evt);
+  hoveredNote=snapPitch(y); hoverX=x;
+  drawStaff();
+  const accSym=hoveredNote.acc==='#'?'♯':hoveredNote.acc==='b'?'♭':'';
+  const action = selectedSlotId!==null ? 'toevoegen aan akkoord' : 'nieuwe noot';
+  showTooltip(evt.clientX,evt.clientY,`${hoveredNote.name}${accSym}${hoveredNote.octave} · ${durLabel(selectedDur)} · ${action}`);
+}
+
+function onStaffClick(evt){
+  const {x,y}=getSvgXY(evt);
+  const pitch=snapPitch(y);
+
+  if (selectedSlotId !== null) {
+    // Add pitch to selected slot
+    const sl=slots.find(s=>s.id===selectedSlotId);
+    if (sl) {
+      const exists=sl.pitches.some(p=>p.name===pitch.name&&p.acc===pitch.acc&&p.octave===pitch.octave);
+      if (!exists) { sl.pitches.push(pitch); }
+      previewPitch(pitch.name,pitch.acc,pitch.octave);
+    }
+    // Keep selection open so user can keep adding
+  } else {
+    // New slot
+    slots.push({id:nextId++, dur:selectedDur, pitches:[pitch]});
+    previewPitch(pitch.name,pitch.acc,pitch.octave);
+  }
+
+  drawStaff(); renderChips(); updateInfo(); updateChordAssistant();
+}
+
+// ═══════════════════════════════════════════════════════════
+// CHIPS
+// ═══════════════════════════════════════════════════════════
+function renderChips(){
+  const container=document.getElementById('noteChips');
+  if(!slots.length){
+    container.innerHTML='<span class="empty-hint">Nog geen noten — klik op de notenbalk om te beginnen…</span>';
+    return;
+  }
+  container.innerHTML='';
+  slots.forEach((sl,si)=>{
+    const isSelected=sl.id===selectedSlotId;
+    const chip=document.createElement('div');
+    chip.className='note-chip'+(sl.pitches.length>1?' chord-chip':'')+(isSelected?' slot-selected':'');
+    chip.dataset.slotid=sl.id;
+    chip.draggable=true;
+    chip.title=isSelected?'Geselecteerd voor akkoord — klik opnieuw om te deselecteren':'Klik om te selecteren · sleep om te verplaatsen';
+
+    const idx=document.createElement('span'); idx.className='chip-idx'; idx.textContent=si+1;
+    chip.appendChild(idx);
+
+    const pitchWrap=document.createElement('div');
+    pitchWrap.style.cssText='display:flex;flex-direction:column;align-items:center;gap:1px;margin:1px 0;';
+    sl.pitches.forEach(p=>{
+      const accSym=p.acc==='#'?'♯':p.acc==='b'?'♭':'';
+      const span=document.createElement('span');
+      span.style.cssText='font-size:0.82rem;font-weight:bold;line-height:1.25;';
+      span.innerHTML=`${p.name}${accSym}<sub style="font-size:0.52rem">${p.octave}</sub>`;
+      pitchWrap.appendChild(span);
+    });
+    chip.appendChild(pitchWrap);
+
+    const dur=document.createElement('span'); dur.className='chip-dur'; dur.textContent=durLabel(sl.dur);
+    chip.appendChild(dur);
+
+    // Delete button
+    const del=document.createElement('span'); del.className='chip-del'; del.textContent='×';
+    del.addEventListener('click',e=>{
+      e.stopPropagation();
+      if(selectedSlotId===sl.id) selectedSlotId=null;
+      slots.splice(si,1);
+      drawStaff(); renderChips(); updateInfo(); updateHint();
+    });
+    chip.appendChild(del);
+
+    // Click = select/deselect
+    chip.addEventListener('click',()=>selectSlot(sl.id));
+
+    // Drag
+    chip.addEventListener('dragstart',e=>{
+      dragSrcIdx=si; e.dataTransfer.effectAllowed='move';
+      chip.style.opacity='0.4';
+      const g=document.getElementById('dragGhost');
+      g.textContent=sl.pitches.map(p=>p.name+(p.acc==='#'?'♯':p.acc==='b'?'♭':'')+p.octave).join('+');
+      g.style.display='block';
+    });
+    chip.addEventListener('dragend',()=>{
+      chip.style.opacity='1';
+      document.getElementById('dragGhost').style.display='none';
+      document.querySelectorAll('.note-chip').forEach(c=>c.classList.remove('drag-over'));
+      dragSrcIdx=null;
+    });
+    chip.addEventListener('dragover',e=>{
+      e.preventDefault(); e.dataTransfer.dropEffect='move';
+      document.querySelectorAll('.note-chip').forEach(c=>c.classList.remove('drag-over'));
+      chip.classList.add('drag-over');
+    });
+    chip.addEventListener('drop',e=>{
+      e.preventDefault();
+      if(dragSrcIdx===null||dragSrcIdx===si) return;
+      const moved=slots.splice(dragSrcIdx,1)[0];
+      slots.splice(dragSrcIdx<si?si:si,0,moved);
+      drawStaff(); renderChips(); updateInfo();
+    });
+
+    container.appendChild(chip);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// TOOLBAR
+// ═══════════════════════════════════════════════════════════
+function setDur(d){
+  selectedDur=d;
+  document.querySelectorAll('[id^="dur-"]').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById('dur-'+d); if(btn) btn.classList.add('active');
+}
+function setAcc(a){
+  selectedAcc=a;
+  document.querySelectorAll('[id^="acc-"]').forEach(b=>b.classList.remove('active'));
+  const k=a==='#'?'sharp':a==='b'?'flat':'natural';
+  const btn=document.getElementById('acc-'+k); if(btn) btn.classList.add('active');
+}
+function setMeter(m){
+  beatsPerMeasure=m;
+  document.querySelectorAll('[id^="meter-"]').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById('meter-'+m); if(btn) btn.classList.add('active');
+  drawStaff(); updateInfo();
+}
+function undoLast(){
+  if(!slots.length) return;
+  const last=slots[slots.length-1];
+  if(last.pitches.length>1) last.pitches.pop();
+  else { if(selectedSlotId===last.id) selectedSlotId=null; slots.pop(); }
+  drawStaff(); renderChips(); updateInfo(); updateHint();
+}
+function clearAll(){
+  if(!slots.length) return;
+  if(!confirm('Alle noten verwijderen?')) return;
+  slots=[]; selectedSlotId=null;
+  drawStaff(); renderChips(); updateInfo(); updateHint();
+}
+function updateTempo(v){ tempo=parseInt(v); document.getElementById('tempoVal').textContent=v; }
+
+function updateInfo(){
+  const total=slots.reduce((s,sl)=>s+sl.dur,0);
+  const measures=Math.floor(total/beatsPerMeasure);
+  const chords=slots.filter(sl=>sl.pitches.length>1).length;
+  let info=`${slots.length} slots · ${beatsPerMeasure}/4 · ${measures} maten`;
+  if(chords) info+=` · ${chords} akkoord${chords>1?'en':''}`;
+  document.getElementById('scoreInfo').textContent=info;
+}
+function durLabel(d){ return {0.25:'1/16',0.5:'1/8',1:'1/4',1.5:'3/8',2:'1/2',3:'3/4'}[d]||String(d); }
+
+// ═══════════════════════════════════════════════════════════
+// TOOLTIP
+// ═══════════════════════════════════════════════════════════
+function showTooltip(cx,cy,txt){ const t=document.getElementById('tooltip'); t.textContent=txt; t.style.opacity='1'; t.style.left=(cx+14)+'px'; t.style.top=(cy-22)+'px'; }
+function hideTooltip(){ document.getElementById('tooltip').style.opacity='0'; }
+document.addEventListener('mousemove',e=>{ const t=document.getElementById('tooltip'); t.style.left=(e.clientX+14)+'px'; t.style.top=(e.clientY-22)+'px'; });
+document.addEventListener('dragover',e=>{ const g=document.getElementById('dragGhost'); if(g.style.display==='block'){g.style.left=e.clientX+'px';g.style.top=e.clientY+'px';} });
+
+// ═══════════════════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════════════════
+function exportNotes(){
+  if(!slots.length){alert('Geen noten om te exporteren.');return;}
+  const title=document.getElementById('scoreTitle').value;
+  const lines=[`// ${title}`,`// Tempo: ${tempo} bpm · Maatsoort: ${beatsPerMeasure}/4`,'','const melody = ['];
+  slots.forEach(sl=>{
+    if(sl.pitches.length===1){
+      const p=sl.pitches[0];
+      lines.push(`  ['${p.name}${p.acc}',${p.octave},${sl.dur}],`);
+    } else {
+      const c=sl.pitches.map(p=>`['${p.name}${p.acc}',${p.octave}]`).join(', ');
+      lines.push(`  {chord:[${c}],dur:${sl.dur}},`);
+    }
+  });
+  lines.push('];');
+  const blob=new Blob([lines.join('\n')],{type:'text/plain'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=title.replace(/\s+/g,'_')+'.js'; a.click();
+}
+
+// ═══════════════════════════════════════════════════════════
+// MUZIEKTHEORIE — toonsoorten en akkoorden
+// ═══════════════════════════════════════════════════════════
+
+// Alle toonsoorten met hun diatonische akkoorden
+// Elk akkoord: {roman, name, type, notes:[name+acc], mood, role}
+const KEY_DATA = {
+  'C': {
+    label: 'C majeur', scale: ['C','D','E','F','G','A','B'],
+    chords: [
+      { roman:'I',   name:'C majeur',    type:'maj', notes:['C','E','G'],     mood:'Vrolijk, stabiel',     role:'Thuisgevoel — hier begint en eindigt alles' },
+      { roman:'ii',  name:'D mineur',    type:'min', notes:['D','F','A'],     mood:'Zacht, licht droevig', role:'Beweegt graag naar G of C' },
+      { roman:'iii', name:'E mineur',    type:'min', notes:['E','G','B'],     mood:'Intiem, ingetogen',    role:'Geeft kleur, minder gebruikelijk' },
+      { roman:'IV',  name:'F majeur',    type:'maj', notes:['F','A','C'],     mood:'Warm, open',           role:'Veel gebruikt vóór C of G' },
+      { roman:'V',   name:'G majeur',    type:'maj', notes:['G','B','D'],     mood:'Spanning, beweging',   role:'Vraagt om oplossing naar C' },
+      { roman:'vi',  name:'A mineur',    type:'min', notes:['A','C','E'],     mood:'Melancolisch, warm',   role:'Verwant aan C, geeft diepte' },
+      { roman:'vii°',name:'B verminderd',type:'dim', notes:['B','D','F'],     mood:'Onrustig, dissonant',  role:'Zeldzaam — spanningsnoot' },
+    ]
+  },
+  'G': {
+    label: 'G majeur', scale: ['G','A','B','C','D','E','F#'],
+    chords: [
+      { roman:'I',   name:'G majeur',    type:'maj', notes:['G','B','D'],     mood:'Helder, opgewekt',     role:'Thuistoonsoort' },
+      { roman:'ii',  name:'A mineur',    type:'min', notes:['A','C','E'],     mood:'Zacht, droevig',       role:'Beweegt naar D of G' },
+      { roman:'iii', name:'B mineur',    type:'min', notes:['B','D','F#'],    mood:'Serieus, ingetogen',   role:'Geeft kleur' },
+      { roman:'IV',  name:'C majeur',    type:'maj', notes:['C','E','G'],     mood:'Warm, vertrouwd',      role:'Veel gebruikt vóór G' },
+      { roman:'V',   name:'D majeur',    type:'maj', notes:['D','F#','A'],    mood:'Spanning, verwachting',role:'Vraagt om G' },
+      { roman:'vi',  name:'E mineur',    type:'min', notes:['E','G','B'],     mood:'Melancolisch',         role:'Verwant aan G' },
+      { roman:'vii°',name:'F# verminderd',type:'dim',notes:['F#','A','C'],   mood:'Onrustig',             role:'Spanningsnoot' },
+    ]
+  },
+  'F': {
+    label: 'F majeur', scale: ['F','G','A','Bb','C','D','E'],
+    chords: [
+      { roman:'I',   name:'F majeur',    type:'maj', notes:['F','A','C'],     mood:'Warm, open',           role:'Thuistoonsoort' },
+      { roman:'ii',  name:'G mineur',    type:'min', notes:['G','Bb','D'],    mood:'Licht melancholisch',  role:'Beweegt naar C of F' },
+      { roman:'iii', name:'A mineur',    type:'min', notes:['A','C','E'],     mood:'Intiem',               role:'Geeft kleur' },
+      { roman:'IV',  name:'Bb majeur',   type:'maj', notes:['Bb','D','F'],    mood:'Rijk, vol',            role:'Karakteristiek voor F' },
+      { roman:'V',   name:'C majeur',    type:'maj', notes:['C','E','G'],     mood:'Spanning',             role:'Vraagt om F' },
+      { roman:'vi',  name:'D mineur',    type:'min', notes:['D','F','A'],     mood:'Droevig, diep',        role:'Verwant aan F' },
+      { roman:'vii°',name:'E verminderd',type:'dim', notes:['E','G','Bb'],   mood:'Onrustig',             role:'Spanningsnoot' },
+    ]
+  },
+  'D': {
+    label: 'D majeur', scale: ['D','E','F#','G','A','B','C#'],
+    chords: [
+      { roman:'I',   name:'D majeur',    type:'maj', notes:['D','F#','A'],    mood:'Helder, stralend',     role:'Thuistoonsoort' },
+      { roman:'ii',  name:'E mineur',    type:'min', notes:['E','G','B'],     mood:'Zacht',                role:'Beweegt naar A of D' },
+      { roman:'iii', name:'F# mineur',   type:'min', notes:['F#','A','C#'],   mood:'Intens',               role:'Geeft kleur' },
+      { roman:'IV',  name:'G majeur',    type:'maj', notes:['G','B','D'],     mood:'Warm',                 role:'Veel gebruikt vóór D' },
+      { roman:'V',   name:'A majeur',    type:'maj', notes:['A','C#','E'],    mood:'Spanning',             role:'Vraagt om D' },
+      { roman:'vi',  name:'B mineur',    type:'min', notes:['B','D','F#'],    mood:'Melancolisch',         role:'Verwant aan D' },
+      { roman:'vii°',name:'C# verminderd',type:'dim',notes:['C#','E','G'],   mood:'Onrustig',             role:'Spanningsnoot' },
+    ]
+  },
+  'Am': {
+    label: 'A mineur', scale: ['A','B','C','D','E','F','G'],
+    chords: [
+      { roman:'i',   name:'A mineur',    type:'min', notes:['A','C','E'],     mood:'Melancolisch, intens', role:'Thuistoonsoort' },
+      { roman:'ii°', name:'B verminderd',type:'dim', notes:['B','D','F'],     mood:'Onrustig',             role:'Spanningsnoot' },
+      { roman:'III', name:'C majeur',    type:'maj', notes:['C','E','G'],     mood:'Licht, warm',          role:'Contrast met Am' },
+      { roman:'iv',  name:'D mineur',    type:'min', notes:['D','F','A'],     mood:'Droevig',              role:'Diep en donker' },
+      { roman:'V',   name:'E majeur',    type:'maj', notes:['E','G#','B'],    mood:'Spanning',             role:'Klassieke oplossing naar Am' },
+      { roman:'VI',  name:'F majeur',    type:'maj', notes:['F','A','C'],     mood:'Warm, troostend',      role:'Geliefd in mineur' },
+      { roman:'VII', name:'G majeur',    type:'maj', notes:['G','B','D'],     mood:'Brede beweging',       role:'Beweegt naar C of Am' },
+    ]
+  },
+  'Em': {
+    label: 'E mineur', scale: ['E','F#','G','A','B','C','D'],
+    chords: [
+      { roman:'i',   name:'E mineur',    type:'min', notes:['E','G','B'],     mood:'Ingetogen, serieus',   role:'Thuistoonsoort' },
+      { roman:'ii°', name:'F# verminderd',type:'dim',notes:['F#','A','C'],   mood:'Onrustig',             role:'Spanningsnoot' },
+      { roman:'III', name:'G majeur',    type:'maj', notes:['G','B','D'],     mood:'Licht',                role:'Contrast' },
+      { roman:'iv',  name:'A mineur',    type:'min', notes:['A','C','E'],     mood:'Warm, diep',           role:'Verwant aan Em' },
+      { roman:'V',   name:'B majeur',    type:'maj', notes:['B','D#','F#'],   mood:'Spanning',             role:'Vraagt om Em' },
+      { roman:'VI',  name:'C majeur',    type:'maj', notes:['C','E','G'],     mood:'Helder',               role:'Mooi contrast' },
+      { roman:'VII', name:'D majeur',    type:'maj', notes:['D','F#','A'],    mood:'Beweging',             role:'Beweegt naar Em of G' },
+    ]
+  },
+  'Dm': {
+    label: 'D mineur', scale: ['D','E','F','G','A','Bb','C'],
+    chords: [
+      { roman:'i',   name:'D mineur',    type:'min', notes:['D','F','A'],     mood:'Droevig, ernstig',     role:'Thuistoonsoort' },
+      { roman:'ii°', name:'E verminderd',type:'dim', notes:['E','G','Bb'],   mood:'Onrustig',             role:'Spanningsnoot' },
+      { roman:'III', name:'F majeur',    type:'maj', notes:['F','A','C'],     mood:'Warm',                 role:'Contrast' },
+      { roman:'iv',  name:'G mineur',    type:'min', notes:['G','Bb','D'],    mood:'Donker',               role:'Verwant aan Dm' },
+      { roman:'V',   name:'A majeur',    type:'maj', notes:['A','C#','E'],    mood:'Spanning',             role:'Vraagt om Dm' },
+      { roman:'VI',  name:'Bb majeur',   type:'maj', notes:['Bb','D','F'],    mood:'Rijk, vol',            role:'Karakteristiek' },
+      { roman:'VII', name:'C majeur',    type:'maj', notes:['C','E','G'],     mood:'Beweging',             role:'Beweegt naar F of Dm' },
+    ]
+  }
+};
+
+let currentKey = 'C';
+
+function onKeyChange() {
+  currentKey = document.getElementById('keySelect').value;
+  if (selectedSlotId !== null) updateChordAssistant();
+}
+
+// ─── Match score: hoe goed passen de huidige noten bij een akkoord? ───
+// Returns {score:0-3, missing:[], extra:[]}
+function matchChord(currentPitches, chordNotes) {
+  const curNames = currentPitches.map(p => p.name + p.acc);
+  const matching = chordNotes.filter(n => curNames.includes(n));
+  const missing  = chordNotes.filter(n => !curNames.includes(n));
+  const extra    = curNames.filter(n => !chordNotes.includes(n));
+  return { score: matching.length, matching, missing, extra };
+}
+
+// ─── Is a note in the current key's scale? ───
+function isInKey(name, acc) {
+  const scale = KEY_DATA[currentKey].scale;
+  return scale.includes(name + acc) || scale.includes(name) && acc === '';
+}
+
+// ─── Note role within a chord ───
+function noteRole(noteNameAcc, chordNotes) {
+  const idx = chordNotes.indexOf(noteNameAcc);
+  return ['grondtoon','terts','kwint','septiem'][idx] || '';
+}
+
+// ─── Build and show the chord assistant ───
+function updateChordAssistant() {
+  const panel = document.getElementById('chordAssistant');
+  const sl = selectedSlotId !== null ? slots.find(s=>s.id===selectedSlotId) : null;
+
+  if (!sl) {
+    panel.classList.remove('visible');
+    return;
+  }
+  panel.classList.add('visible');
+
+  const kd = KEY_DATA[currentKey];
+
+  // ── Analysis text ──
+  const analysis = document.getElementById('caAnalysis');
+  const curNames = sl.pitches.map(p => p.name + p.acc);
+
+  // Check out-of-key notes
+  const outOfKey = sl.pitches.filter(p => !isInKey(p.name, p.acc));
+
+  // Find best matching chord
+  let bestMatch = null, bestScore = 0;
+  kd.chords.forEach(ch => {
+    const {score} = matchChord(sl.pitches, ch.notes);
+    if (score > bestScore) { bestScore = score; bestMatch = ch; }
+  });
+
+  let analysisHtml = '';
+  if (sl.pitches.length === 0) {
+    analysisHtml = 'Selecteer een slot en klik op een akkoord hieronder om het in te voegen, of voeg losse noten toe.';
+  } else {
+    const pitchStr = sl.pitches.map(p=>`<strong>${p.name}${p.acc==='#'?'♯':p.acc==='b'?'♭':''}</strong>`).join(' + ');
+    analysisHtml = `Geselecteerde noten: ${pitchStr}`;
+    if (bestMatch && bestScore > 0) {
+      analysisHtml += ` → beste match: <span class="match-name">${bestMatch.name}</span>`;
+      if (bestScore === bestMatch.notes.length) {
+        analysisHtml += ' ✓ <em>volledig akkoord</em>';
+      } else {
+        const pct = Math.round(bestScore/bestMatch.notes.length*100);
+        analysisHtml += ` (${pct}% compleet)`;
+      }
+    }
+    if (outOfKey.length > 0) {
+      const names = outOfKey.map(p=>`<span class="out-of-key">${p.name}${p.acc==='#'?'♯':p.acc==='b'?'♭':''}</span>`).join(', ');
+      analysisHtml += `<br>⚠ Buiten toonsoort: ${names} — dit klinkt scherp/dissonant (kan bewust zijn!)`;
+    }
+  }
+  analysis.innerHTML = analysisHtml;
+
+  // ── Chord grid ──
+  const grid = document.getElementById('chordGrid');
+  grid.innerHTML = '';
+  kd.chords.forEach(ch => {
+    const {score, missing} = matchChord(sl.pitches, ch.notes);
+    const isBest = bestMatch && ch.name === bestMatch.name && bestScore > 0;
+    const isPartial = score > 0 && !isBest;
+
+    const card = document.createElement('div');
+    card.className = 'chord-card' + (isBest?' best-match':isPartial?' partially-matches':'');
+
+    card.innerHTML = `
+      <div class="cc-roman">${ch.roman}</div>
+      <div class="cc-name">${ch.name}</div>
+      <div class="cc-notes">${ch.notes.map(n=>n.replace('b','♭').replace('#','♯')).join(' – ')}</div>
+      <div class="cc-mood">${ch.mood}</div>
+      <div class="cc-badge">beste match</div>
+    `;
+
+    // Hover: show role tooltip
+    card.title = ch.role;
+
+    // Click: insert full chord into selected slot (replace pitches)
+    card.addEventListener('click', () => insertChord(ch));
+
+    // Preview on hover
+    card.addEventListener('mouseenter', () => previewChordNotes(ch.notes));
+
+    grid.appendChild(card);
+  });
+
+  // ── Suggestions: which notes to add to complete bestMatch ──
+  const suggestWrap = document.getElementById('caSuggest');
+  const pills = document.getElementById('suggestPills');
+  pills.innerHTML = '';
+
+  if (bestMatch && bestScore < bestMatch.notes.length && sl.pitches.length > 0) {
+    suggestWrap.style.display = 'block';
+    const {missing} = matchChord(sl.pitches, bestMatch.notes);
+    missing.forEach(noteNameAcc => {
+      const pill = document.createElement('div');
+      pill.className = 'suggest-pill';
+      const displayName = noteNameAcc.replace('#','♯').replace('b','♭');
+      const role = noteRole(noteNameAcc, bestMatch.notes);
+      pill.innerHTML = `<span class="sp-note">+ ${displayName}</span><span class="sp-role">${role}</span>`;
+      pill.title = `Voeg ${displayName} toe — ${role} van ${bestMatch.name}`;
+      pill.addEventListener('click', () => addNoteToSelected(noteNameAcc));
+      pill.addEventListener('mouseenter', () => {
+        const [n, a, o] = parseNoteNameAcc(noteNameAcc, sl);
+        previewPitch(n, a, o);
+      });
+      pills.appendChild(pill);
+    });
+
+    // Also flag out-of-scale notes that could be added
+  } else if (sl.pitches.length === 0) {
+    suggestWrap.style.display = 'none';
+  } else if (bestMatch && bestScore === bestMatch.notes.length) {
+    suggestWrap.style.display = 'block';
+    pills.innerHTML = `<span class="no-suggest">✓ Volledig ${bestMatch.name}-akkoord!</span>`;
+  } else {
+    suggestWrap.style.display = 'none';
+  }
+}
+
+// ─── Parse a note string like "F#" or "Bb" into {name, acc} ───
+function parseNote(noteStr) {
+  if (noteStr.endsWith('#')) return { name: noteStr[0], acc: '#' };
+  if (noteStr.endsWith('b') && noteStr.length === 2) return { name: noteStr[0], acc: 'b' };
+  return { name: noteStr, acc: '' };
+}
+
+// ─── Guess a good octave for a note given what's already in the slot ───
+function guessOctave(name, acc, existingPitches) {
+  const baseOctave = existingPitches.length > 0
+    ? Math.round(existingPitches.reduce((s,p)=>s+p.octave,0)/existingPitches.length)
+    : 4;
+  // Keep notes close together (within a fifth)
+  return baseOctave;
+}
+
+function parseNoteNameAcc(noteNameAcc, sl) {
+  const {name, acc} = parseNote(noteNameAcc);
+  const oct = guessOctave(name, acc, sl.pitches);
+  return [name, acc, oct];
+}
+
+// ─── Add a single note to the selected slot ───
+function addNoteToSelected(noteNameAcc) {
+  const sl = slots.find(s=>s.id===selectedSlotId);
+  if (!sl) return;
+  const {name, acc} = parseNote(noteNameAcc);
+  const oct = guessOctave(name, acc, sl.pitches);
+  const exists = sl.pitches.some(p=>p.name===name&&p.acc===acc&&p.octave===oct);
+  if (!exists) {
+    sl.pitches.push({name, acc, octave:oct});
+    previewPitch(name, acc, oct);
+  }
+  drawStaff(); renderChips(); updateInfo(); updateChordAssistant();
+}
+
+// ─── Insert a full chord (replace pitches in selected slot) ───
+function insertChord(ch) {
+  const sl = slots.find(s=>s.id===selectedSlotId);
+  if (!sl) return;
+  const base = sl.pitches.length>0 ? sl.pitches[0].octave : 4;
+  sl.pitches = ch.notes.map((n,i) => {
+    const {name, acc} = parseNote(n);
+    // Lay notes out in a natural voicing (don't go above octave 5)
+    let oct = base;
+    if (i > 0) {
+      // Ensure each note is >= previous note in pitch
+      const prev = sl.pitches[i-1];
+      const prevSemi = noteToFreq(prev.name, prev.acc, prev.octave);
+      const curSemi  = noteToFreq(name, acc, oct);
+      if (curSemi < prevSemi) oct++;
+    }
+    return {name, acc, octave:oct};
+  });
+  previewSlot(sl);
+  drawStaff(); renderChips(); updateInfo(); updateChordAssistant();
+}
+
+// ─── Preview chord notes as a quick arpeggio ───
+function previewChordNotes(chordNotes) {
+  const c = getCtx();
+  chordNotes.forEach((n, i) => {
+    const {name, acc} = parseNote(n);
+    const freq = noteToFreq(name, acc, 4);
+    setTimeout(() => _play(freq, c.currentTime+0.01, 0.35, 0.28), i*60);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+setAcc(''); setMeter(4); drawStaff(); renderChips(); updateInfo(); updateHint();
+document.getElementById('keySelect').value = 'C';
+updateChordAssistant();
+</script>
+</body>
+</html>
